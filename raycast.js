@@ -23,13 +23,13 @@ class Map {
   }
 
   render() {
-    for (var i = 1; i < MAP_NUM_ROWS; i++)
+    for (var i = 0; i < MAP_NUM_ROWS; i++)
     {
-      for (var j = 1; j < MAP_NUM_COLS; j++)
+      for (var j = 0; j < MAP_NUM_COLS; j++)
       {
         var tileX = j * TILE_SIZE;
         var tileY = i * TILE_SIZE;
-        var tileColor = this.grid[i][j] == 2 ? "#222" : "#fff"
+        var tileColor = this.grid[i][j] == 1 ? "#222" : "#fff"
         stroke("#223")
         fill(tileColor)
         rect(tileX, tileY, TILE_SIZE, TILE_SIZE);
@@ -46,7 +46,6 @@ function setup() {
 }
 
 function draw() {
-  //renderizar todos objetos
   update();
   grid.render();
 }
