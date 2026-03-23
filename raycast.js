@@ -12,7 +12,7 @@ class Player {
     this.radius = 6;
     this.turnDirection = 0; // -1 esquerda +1 direita
     this.walkDirection = 0; // -1 tras, +1 frente
-    this.rotationAngle =3 * Math.PI / 2 ; // angulo que o player nasce virado
+    this.rotationAngle = 3 * Math.PI / 2; // angulo que o player nasce virado: 270 graus virado para cima
     this.moveSpeed = 2.0;
     this.rotationSpeed = 2 * (Math.PI / 180); // quantos graus ira rotacionar igual 2 graus por frame aqui
   }
@@ -25,6 +25,8 @@ class Player {
     line(
       this.x,
       this.y,
+      //TODO: revisar aqui, como 270 aponta para cima isso quer dizer que o x vale 0 e o y vale 1, cos = 0 e sen = 1? por 
+      //isso 20px para cima, apontando a seta para norte? 
       this.x + Math.cos(this.rotationAngle) * 20, // entao a formula é cos = ca / h , logo  20 * cos = ca horizontal _
       this.y + Math.sin(this.rotationAngle) * 20, // representa a distancia da origem até o final do vetor da seta  |
     );
@@ -58,7 +60,7 @@ class Map {
   render() {
     for (var i = 0; i < MAP_NUM_ROWS; i++) { // linha, vertical , eixo y
       for (var j = 0; j < MAP_NUM_COLS; j++) { // coluna , horizontal, eixo x
-        var tileX = j * TILE_SIZE; 
+        var tileX = j * TILE_SIZE;
         var tileY = i * TILE_SIZE;
         var tileColor = this.grid[i][j] == 1 ? "#222" : "#fff"
         stroke("#223")
