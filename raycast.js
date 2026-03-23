@@ -9,7 +9,7 @@ class Player {
   constructor() {
     this.x = WINDOW_WIDTH / 2;
     this.y = WINDOW_HEIGHT / 2;
-    this.radius = 6;
+    this.radius = 10;
     this.turnDirection = 0; // -1 esquerda +1 direita
     this.walkDirection = 0; // -1 tras, +1 frente
     this.rotationAngle = 3 * Math.PI / 2; // angulo que o player nasce virado: 270 graus virado para cima
@@ -35,8 +35,13 @@ class Player {
   update() {
     this.rotationAngle += this.rotationSpeed * this.turnDirection;
     var moveStep = this.moveSpeed * this.walkDirection;
-    this.x += Math.cos(this.rotationAngle) * moveStep;
-    this.y += Math.sin(this.rotationAngle) * moveStep;
+    var newPlayerPosX = this.x + Math.cos(this.rotationAngle) * moveStep;
+    var newPlayerPosY = this.y + Math.sin(this.rotationAngle) * moveStep;
+    if (!grid.hasWall(newPlayerPosX, newPlayerPosY))
+    {
+      this.x = newPlayerPosX;
+      this.y = newPlayerPosY;
+    }
   }
 }
 
@@ -55,6 +60,14 @@ class Map {
       [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
       [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
     ];
+  }
+
+  hasWall(x, y) {
+    if (x < 0 || x > WINDOW_WIDTH || y < 0 || y > WINDOW_HEIGHT)
+      return false;
+    var mapPosX = Math.floor(x / TILE_SIZE);
+    var mapPosY = Math.floor(y / TILE_SIZE);
+    return this.grid[mapPosY][mapPosX] != 0;
   }
 
   render() {
