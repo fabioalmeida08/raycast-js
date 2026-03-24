@@ -4,8 +4,8 @@ const MAP_NUM_ROWS = 11;
 const MAP_NUM_COLS = 15;
 const WINDOW_WIDTH = MAP_NUM_COLS * TILE_SIZE;
 const WINDOW_HEIGHT = MAP_NUM_ROWS * TILE_SIZE;
-const FOV_ANGLE = 60 * (Math.PI / 180);
-const WALL_STRIP_WIDTH = 50;
+const FOV_ANGLE = 90 * (Math.PI / 180);
+const WALL_STRIP_WIDTH = 1;
 const NUM_RAYS = WINDOW_WIDTH / WALL_STRIP_WIDTH;
 
 class Player {
@@ -146,11 +146,13 @@ function castAllRays() {
   }
 }
 
+//roda primeiro
 function setup() {
   //inicilizar os objetos
   createCanvas(WINDOW_WIDTH, WINDOW_HEIGHT);
 }
 
+//roda segundo
 function draw() {
   update();
   grid.render();
