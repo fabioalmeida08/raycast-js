@@ -6,7 +6,7 @@ const WINDOW_WIDTH = MAP_NUM_COLS * TILE_SIZE;
 const WINDOW_HEIGHT = MAP_NUM_ROWS * TILE_SIZE;
 
 const FOV_ANGLE = 90 * (Math.PI / 180);
-const WALL_STRIP_WIDTH = 20; 
+const WALL_STRIP_WIDTH = 20;
 const NUM_RAYS = WINDOW_WIDTH / WALL_STRIP_WIDTH; // numero de raios depende do wsw
 
 class Player {
@@ -29,7 +29,8 @@ class Player {
     line(
       this.x,
       this.y,
-      //TODO: revisar aqui, como 270 aponta para cima isso quer dizer que o x vale 0 e o y vale 1, cos = 0 e sen = 1? por 
+
+      //INFO: revisar aqui, como 270 aponta para cima isso quer dizer que o x vale 0 e o y vale 1, cos = 0 e sen = 1? por 
       //isso 20px para cima, apontando a seta para norte? 
       this.x + Math.cos(this.rotationAngle) * 20, // entao a formula é cos = ca / h , logo  20 * cos = ca horizontal _
       this.y + Math.sin(this.rotationAngle) * 20, // representa a distancia da origem até o final do vetor da seta  |
@@ -41,8 +42,7 @@ class Player {
     var moveStep = this.moveSpeed * this.walkDirection;
     var newPlayerPosX = this.x + Math.cos(this.rotationAngle) * moveStep;
     var newPlayerPosY = this.y + Math.sin(this.rotationAngle) * moveStep;
-    if (!grid.hasWall(newPlayerPosX, newPlayerPosY))
-    {
+    if (!grid.hasWall(newPlayerPosX, newPlayerPosY)) {
       this.x = newPlayerPosX;
       this.y = newPlayerPosY;
     }
@@ -89,35 +89,47 @@ class Map {
 }
 
 class Ray {
-  constructor (rayAngle) {
+  constructor(rayAngle) {
     this.rayAngle = normalizeAngle(rayAngle);
-    this.hitWallX = 0;
-    this.hitWallY = 0;
+    this.wallHitX = 0;
+    this.wallHitY = 0;
     this.distance = 0;
+
+    this.wasHitVertical = false;
+
     this.isFacingDown = this.rayAngle > 0 && this.rayAngle < Math.PI;
     this.isFacingUp = !this.isFacingDown;
+
     this.isFacingRight = this.rayAngle < Math.PI / 2 || this.rayAngle > (3 * Math.PI) / 2;
     this.isFacingLeft = !this.isFacingRight;
   }
 
-  render () {
-    stroke("rgba(255,0,0,0.3)");
+  render() {
+    // stroke("rgba(255,0,0,0.3)");
+    stroke("red");
     line(
       player.x,
       player.y,
-      player.x + Math.cos(this.rayAngle) * 30,
-      player.y + Math.sin(this.rayAngle) * 30
+      this.wallHitX,
+      this.wallHitY,
+      // player.x + Math.cos(this.rayAngle) * 30,
+      // player.y + Math.sin(this.rayAngle) * 30
     );
   }
 
-  cast (columnId) {
+  cast(columnId) {
     var xintercept, yintercept
     var xstep, ystep
-    var foundHorzWallHit = false;
-    var wallHitX = 0;
-    var wallHitY = 0;
 
-    console.log("is this facing Right", this.isFacingRight);
+    // console.log("is this facing Right", this.isFacingRight);
+    console.log(`rayAngle: ${(this.rayAngle * 180 / Math.PI).toFixed(1)}° | facingRight: ${this.isFacingRight} | cos: ${Math.cos(this.rayAngle).toFixed(3)}`);
+
+    //////////////////////////////////////////
+    // HORIZONTAL
+    //////////////////////////////////////////
+    var foundHorzWallHit = false;
+    var horzWallHitX = 0;
+    var horzWallHitY = 0;
 
     // achar a coordenada y do primeiro cruzamento horizontal (linha de tile) HORIZONTAL
     yintercept = Math.floor(player.y / TILE_SIZE) * TILE_SIZE;
@@ -126,6 +138,7 @@ class Ray {
     xintercept = player.x + (yintercept - player.y) / Math.tan(this.rayAngle);
 
     // calcular o incremento do ystep e x step
+    //TODO: refatorar essa parte com xstep = ystep / tan(a) 
     ystep = TILE_SIZE;
     ystep *= (this.isFacingUp) ? -1 : 1;
     xstep = TILE_SIZE / Math.tan(this.rayAngle);
@@ -138,21 +151,70 @@ class Ray {
     if (this.isFacingUp)
       nextHorzTouchY--;
 
-    while(nextHorzTouchX >= 0 && nextHorzTouchX <= WINDOW_WIDTH && nextHorzTouchY >= 0 && nextHorzTouchY <= WINDOW_HEIGHT){
-      if (grid.hasWall(nextHorzTouchX,nextHorzTouchY)) {
+    while (nextHorzTouchX >= 0 && nextHorzTouchX <= WINDOW_WIDTH && nextHorzTouchY >= 0 && nextHorzTouchY <= WINDOW_HEIGHT) {
+      if (grid.hasWall(nextHorzTouchX, nextHorzTouchY)) {
         foundHorzWallHit = true;
-        wallHitX = nextHorzTouchX;
-        wallHitY = nextHorzTouchY;
-        stroke("red");
-        line(player.x, player.y, wallHitX, wallHitY);
+        horzWallHitX = nextHorzTouchX;
+        horzWallHitY = nextHorzTouchY;
         break;
-
       } else {
         nextHorzTouchX += xstep;
         nextHorzTouchY += ystep;
       }
-      
     }
+
+    //////////////////////////////////////////
+    // VERTICAL
+    //////////////////////////////////////////
+    var foundVertWallHit = false;
+    var vertWallHitX = 0;
+    var vertWallHitY = 0;
+
+    // achar a coordenada x do primeiro cruzamento vertical (coluna) VERTICAL
+    xintercept = Math.floor(player.x / TILE_SIZE) * TILE_SIZE;
+    xintercept += this.isFacingRight ? TILE_SIZE : 0;
+    // achar a coordernada y o do primeiro cruzamento (coluna) VERTICAL
+    yintercept = player.y + (xintercept - player.x) * Math.tan(this.rayAngle);
+
+    // calcular o incremento do ystep e x step
+    //TODO: refatorar essa parte com xstep = ystep / tan(a) 
+    xstep = TILE_SIZE;
+    xstep *= (this.isFacingLeft) ? -1 : 1;
+    ystep = TILE_SIZE * Math.tan(this.rayAngle);
+    ystep *= (this.isFacingUp && ystep > 0) ? -1 : 1;
+    ystep *= (this.isFacingDown && ystep < 0) ? -1 : 1;
+
+    var nextVertTouchX = xintercept;
+    var nextVertTouchY = yintercept;
+
+    if (this.isFacingLeft)
+      nextVertTouchX--;
+
+    while (nextVertTouchX >= 0 && nextVertTouchX <= WINDOW_WIDTH && nextVertTouchY >= 0 && nextVertTouchY <= WINDOW_HEIGHT) {
+      if (grid.hasWall(nextVertTouchX, nextVertTouchY)) {
+        foundVertWallHit = true;
+        vertWallHitX = nextVertTouchX;
+        vertWallHitY = nextVertTouchY;
+        break;
+      } else {
+        nextVertTouchX += xstep;
+        nextVertTouchY += ystep;
+      }
+    }
+
+    //INFO: achar a hipotenuza, assim pegar a menor distancia
+    var horzHitDist = (foundHorzWallHit)
+      ? distanceBetweenPoints(player.x, player.y, horzWallHitX, horzWallHitY)
+      : Number.MAX_VALUE; //HACK: refator em c para size_t - 1, para ficar com o maior valor possivel
+    var vertHitDist = (foundVertWallHit)
+      ? distanceBetweenPoints(player.x, player.y, vertWallHitX, vertWallHitY)
+      : Number.MAX_VALUE;
+
+    // guarda somente a menor das distancias
+    this.wallHitX = (horzHitDist < vertHitDist) ? horzWallHitX : vertWallHitX;
+    this.wallHitY = (horzHitDist < vertHitDist) ? horzWallHitY : vertWallHitY;
+    this.distance = (horzHitDist < vertHitDist) ? horzHitDist : vertHitDist;
+    this.wasHitVertical = (vertHitDist < horzHitDist);
   }
 
 }
@@ -160,6 +222,10 @@ class Ray {
 var grid = new Map();
 var player = new Player();
 var rays = [];
+
+function distanceBetweenPoints(x1, y1, x2, y2) {
+  return Math.sqrt((x2 - x1) * (x2 - x1), (y2 - y1) * (y2 - y1));
+}
 
 function keyPressed() {
   if (keyCode === LEFT_ARROW) {
@@ -183,7 +249,7 @@ function keyReleased() {
 }
 
 function normalizeAngle(angle) {
-  angle = angle %  (2 * Math.PI)
+  angle = angle % (2 * Math.PI)
   if (angle < 0)
     angle += (2 * Math.PI)
   return angle
@@ -196,8 +262,7 @@ function castAllRays() {
   rays = [];
 
   // for (var i = 0; i < NUM_RAYS; i++)
-  for (var i = 0; i < 1; i++)
-  {
+  for (var i = 0; i < 1; i++) {
     var ray = new Ray(rayAngle);
     ray.cast(columnId);
     rays.push(ray);
