@@ -6,7 +6,7 @@ const WINDOW_WIDTH = MAP_NUM_COLS * TILE_SIZE;
 const WINDOW_HEIGHT = MAP_NUM_ROWS * TILE_SIZE;
 
 const FOV_ANGLE = 90 * (Math.PI / 180);
-const WALL_STRIP_WIDTH = 20;
+const WALL_STRIP_WIDTH = 10;
 const NUM_RAYS = WINDOW_WIDTH / WALL_STRIP_WIDTH; // numero de raios depende do wsw
 
 class Player {
@@ -105,8 +105,8 @@ class Ray {
   }
 
   render() {
-    // stroke("rgba(255,0,0,0.3)");
-    stroke("red");
+    stroke("rgba(255,0,0,0.3)");
+    // stroke("red");
     line(
       player.x,
       player.y,
@@ -261,8 +261,8 @@ function castAllRays() {
 
   rays = [];
 
-  // for (var i = 0; i < NUM_RAYS; i++)
-  for (var i = 0; i < 1; i++) {
+  for (var i = 0; i < NUM_RAYS; i++) {
+  // for (var i = 0; i < 1; i++) {
     var ray = new Ray(rayAngle);
     ray.cast(columnId);
     rays.push(ray);
@@ -284,10 +284,10 @@ function draw() {
   for (x of rays)
     x.render();
   player.render();
-  castAllRays();
 }
 
 function update() {
   //rendereizar objetos frame por frame
+  castAllRays();
   player.update();
 }
