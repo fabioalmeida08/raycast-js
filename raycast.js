@@ -4,9 +4,10 @@ const MAP_NUM_ROWS = 11;
 const MAP_NUM_COLS = 15;
 const WINDOW_WIDTH = MAP_NUM_COLS * TILE_SIZE;
 const WINDOW_HEIGHT = MAP_NUM_ROWS * TILE_SIZE;
+
 const FOV_ANGLE = 90 * (Math.PI / 180);
-const WALL_STRIP_WIDTH = 1;
-const NUM_RAYS = WINDOW_WIDTH / WALL_STRIP_WIDTH;
+const WALL_STRIP_WIDTH = 20; 
+const NUM_RAYS = WINDOW_WIDTH / WALL_STRIP_WIDTH; // numero de raios depende do wsw
 
 class Player {
   constructor() {
@@ -15,7 +16,7 @@ class Player {
     this.radius = 10;
     this.turnDirection = 0; // -1 esquerda +1 direita
     this.walkDirection = 0; // -1 tras, +1 frente
-    this.rotationAngle = 3 * Math.PI / 2; // angulo que o player nasce virado: 270 graus virado para cima
+    this.rotationAngle = Math.PI / 2; // angulo que o player nasce virado: 270 graus virado para cima
     this.moveSpeed = 2.0;
     this.rotationSpeed = 2 * (Math.PI / 180); // quantos graus ira rotacionar igual 2 graus por frame aqui
   }
@@ -89,7 +90,14 @@ class Map {
 
 class Ray {
   constructor (rayAngle) {
-    this.rayAngle = rayAngle;
+    this.rayAngle = normalizeAngle(rayAngle);
+    this.hitWallX = 0;
+    this.hitWallY = 0;
+    this.distance = 0;
+    this.isFacingDown = this.rayAngle > 0 && this.rayAngle < Math.PI;
+    this.isFacingUp = !this.isFacingDown;
+    this.isFacingRight = this.rayAngle < Math.PI / 2 || this.rayAngle > (3 * Math.PI) / 2;
+    this.isFacingLeft = !this.isFacingRight;
   }
 
   render () {
@@ -100,6 +108,51 @@ class Ray {
       player.x + Math.cos(this.rayAngle) * 30,
       player.y + Math.sin(this.rayAngle) * 30
     );
+  }
+
+  cast (columnId) {
+    var xintercept, yintercept
+    var xstep, ystep
+    var foundHorzWallHit = false;
+    var wallHitX = 0;
+    var wallHitY = 0;
+
+    console.log("is this facing Right", this.isFacingRight);
+
+    // achar a coordenada y do primeiro cruzamento horizontal (linha de tile) HORIZONTAL
+    yintercept = Math.floor(player.y / TILE_SIZE) * TILE_SIZE;
+    yintercept += this.isFacingDown ? TILE_SIZE : 0;
+    // achar a coordernada x o do primeiro cruzamento (linha) HORIZONTAL
+    xintercept = player.x + (yintercept - player.y) / Math.tan(this.rayAngle);
+
+    // calcular o incremento do ystep e x step
+    ystep = TILE_SIZE;
+    ystep *= (this.isFacingUp) ? -1 : 1;
+    xstep = TILE_SIZE / Math.tan(this.rayAngle);
+    xstep *= (this.isFacingLeft && xstep > 0) ? -1 : 1;
+    xstep *= (this.isFacingRight && xstep < 0) ? -1 : 1;
+
+    var nextHorzTouchX = xintercept;
+    var nextHorzTouchY = yintercept;
+
+    if (this.isFacingUp)
+      nextHorzTouchY--;
+
+    while(nextHorzTouchX >= 0 && nextHorzTouchX <= WINDOW_WIDTH && nextHorzTouchY >= 0 && nextHorzTouchY <= WINDOW_HEIGHT){
+      if (grid.hasWall(nextHorzTouchX,nextHorzTouchY)) {
+        foundHorzWallHit = true;
+        wallHitX = nextHorzTouchX;
+        wallHitY = nextHorzTouchY;
+        stroke("red");
+        line(player.x, player.y, wallHitX, wallHitY);
+        break;
+
+      } else {
+        nextHorzTouchX += xstep;
+        nextHorzTouchY += ystep;
+      }
+      
+    }
   }
 
 }
@@ -129,6 +182,13 @@ function keyReleased() {
   }
 }
 
+function normalizeAngle(angle) {
+  angle = angle %  (2 * Math.PI)
+  if (angle < 0)
+    angle += (2 * Math.PI)
+  return angle
+}
+
 function castAllRays() {
   var columnId = 0;
   var rayAngle = player.rotationAngle - (FOV_ANGLE / 2);
@@ -139,7 +199,7 @@ function castAllRays() {
   for (var i = 0; i < 1; i++)
   {
     var ray = new Ray(rayAngle);
-    //TODO: ray.cast();
+    ray.cast(columnId);
     rays.push(ray);
     rayAngle += (FOV_ANGLE) / NUM_RAYS;
     columnId++;
@@ -159,10 +219,10 @@ function draw() {
   for (x of rays)
     x.render();
   player.render();
+  castAllRays();
 }
 
 function update() {
   //rendereizar objetos frame por frame
   player.update();
-  castAllRays();
 }
