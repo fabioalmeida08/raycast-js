@@ -30,7 +30,7 @@ class Player {
       this.x,
       this.y,
 
-      //INFO: revisar aqui, como 270 aponta para cima isso quer dizer que o x vale 0 e o y vale 1, cos = 0 e sen = 1? por 
+      //NOTE: revisar aqui, como 270 aponta para cima isso quer dizer que o x vale 0 e o y vale 1, cos = 0 e sen = 1? por 
       //isso 20px para cima, apontando a seta para norte? 
       this.x + Math.cos(this.rotationAngle) * 20, // entao a formula é cos = ca / h , logo  20 * cos = ca horizontal _
       this.y + Math.sin(this.rotationAngle) * 20, // representa a distancia da origem até o final do vetor da seta  |
@@ -112,8 +112,6 @@ class Ray {
       player.y,
       this.wallHitX,
       this.wallHitY,
-      // player.x + Math.cos(this.rayAngle) * 30,
-      // player.y + Math.sin(this.rayAngle) * 30
     );
   }
 
@@ -202,7 +200,7 @@ class Ray {
       }
     }
 
-    //INFO: achar a hipotenuza, assim pegar a menor distancia
+    //NOTE: achar a hipotenuza, assim pegar a menor distancia
     var horzHitDist = (foundHorzWallHit)
       ? distanceBetweenPoints(player.x, player.y, horzWallHitX, horzWallHitY)
       : Number.MAX_VALUE; //HACK: refator em c para size_t - 1, para ficar com o maior valor possivel
@@ -291,3 +289,4 @@ function update() {
   castAllRays();
   player.update();
 }
+
