@@ -9,6 +9,8 @@ const FOV_ANGLE = 66 * (Math.PI / 180);
 const WALL_STRIP_WIDTH = 2;
 const NUM_RAYS = WINDOW_WIDTH / WALL_STRIP_WIDTH; // numero de raios depende do wsw
 
+const MINIMAP_SCALE_FACTOR = 0.2;
+
 class Player {
   constructor() {
     this.x = WINDOW_WIDTH / 2;
@@ -23,17 +25,21 @@ class Player {
 
   render() {
     noStroke();
-    fill("red");
-    circle(this.x, this.y, this.radius);
-    stroke("red")
+    fill("blue");
+    circle(
+      MINIMAP_SCALE_FACTOR * this.x,
+      MINIMAP_SCALE_FACTOR * this.y,
+      MINIMAP_SCALE_FACTOR * this.radius
+    );
+    stroke("blue")
     line(
-      this.x,
-      this.y,
+      MINIMAP_SCALE_FACTOR * this.x,
+      MINIMAP_SCALE_FACTOR * this.y,
 
       //NOTE: revisar aqui, como 270 aponta para cima isso quer dizer que o x vale 0 e o y vale 1, cos = 0 e sen = 1? por 
       //isso 20px para cima, apontando a seta para norte? 
-      this.x + Math.cos(this.rotationAngle) * 20, // entao a formula é cos = ca / h , logo  20 * cos = ca horizontal _
-      this.y + Math.sin(this.rotationAngle) * 20, // representa a distancia da origem até o final do vetor da seta  |
+      MINIMAP_SCALE_FACTOR * this.x + Math.cos(this.rotationAngle) * 20, // entao a formula é cos = ca / h , logo  20 * cos = ca horizontal _
+      MINIMAP_SCALE_FACTOR * this.y + Math.sin(this.rotationAngle) * 20, // representa a distancia da origem até o final do vetor da seta  |
     );
   }
 
@@ -82,7 +88,11 @@ class Map {
         var tileColor = this.grid[i][j] == 1 ? "#222" : "#fff"
         stroke("#223")
         fill(tileColor)
-        rect(tileX, tileY, TILE_SIZE, TILE_SIZE);
+        rect(
+          MINIMAP_SCALE_FACTOR * tileX,
+          MINIMAP_SCALE_FACTOR * tileY,
+          MINIMAP_SCALE_FACTOR * TILE_SIZE,
+          MINIMAP_SCALE_FACTOR * TILE_SIZE);
       }
     }
   }
@@ -108,10 +118,10 @@ class Ray {
     stroke("rgba(255,0,0,0.3)");
     // stroke("red");
     line(
-      player.x,
-      player.y,
-      this.wallHitX,
-      this.wallHitY,
+      MINIMAP_SCALE_FACTOR * player.x,
+      MINIMAP_SCALE_FACTOR * player.y,
+      MINIMAP_SCALE_FACTOR * this.wallHitX,
+      MINIMAP_SCALE_FACTOR * this.wallHitY,
     );
   }
 
@@ -140,7 +150,7 @@ class Ray {
     // HORIZONTAL
     // ystep = TILE_SIZE * (this.isFacingUp ? -1 : 1);
     // xstep = ystep / Math.tan(this.rayAngle);
-    // // VERTICAL
+    // VERTICAL
     // xstep = TILE_SIZE * (this.isFacingLeft ? -1 : 1);
     // ystep = xstep * Math.tan(this.rayAngle);
     ystep = TILE_SIZE;
@@ -198,7 +208,12 @@ class Ray {
     // if (this.isFacingLeft)
     //   nextVertTouchX--;
 
-    while (nextVertTouchX >= 0 && nextVertTouchX <= WINDOW_WIDTH && nextVertTouchY >= 0 && nextVertTouchY <= WINDOW_HEIGHT) {
+    while (
+      nextVertTouchX >= 0 
+      && nextVertTouchX <= WINDOW_WIDTH 
+      && nextVertTouchY >= 0 
+      && nextVertTouchY <= WINDOW_HEIGHT
+    ) {
       if (grid.hasWall(nextVertTouchX - (this.isFacingLeft ? 1 : 0), nextVertTouchY)) {
         foundVertWallHit = true;
         vertWallHitX = nextVertTouchX;
