@@ -1,12 +1,12 @@
 /// <reference path="./global.d.ts" />
-const TILE_SIZE = 32;
+const TILE_SIZE = 64;
 const MAP_NUM_ROWS = 11;
 const MAP_NUM_COLS = 15;
 const WINDOW_WIDTH = MAP_NUM_COLS * TILE_SIZE;
 const WINDOW_HEIGHT = MAP_NUM_ROWS * TILE_SIZE;
 
 const FOV_ANGLE = 66 * (Math.PI / 180);
-const WALL_STRIP_WIDTH = 10;
+const WALL_STRIP_WIDTH = 2;
 const NUM_RAYS = WINDOW_WIDTH / WALL_STRIP_WIDTH; // numero de raios depende do wsw
 
 class Player {
@@ -136,7 +136,13 @@ class Ray {
     xintercept = player.x + (yintercept - player.y) / Math.tan(this.rayAngle);
 
     // calcular o incremento do ystep e x step
-    //TODO: refatorar essa parte com xstep = ystep / tan(a) 
+    //REFACTOR: refatorar essa parte com:
+    // HORIZONTAL
+    // ystep = TILE_SIZE * (this.isFacingUp ? -1 : 1);
+    // xstep = ystep / Math.tan(this.rayAngle);
+    // // VERTICAL
+    // xstep = TILE_SIZE * (this.isFacingLeft ? -1 : 1);
+    // ystep = xstep * Math.tan(this.rayAngle);
     ystep = TILE_SIZE;
     ystep *= (this.isFacingUp) ? -1 : 1;
     xstep = TILE_SIZE / Math.tan(this.rayAngle);
@@ -146,11 +152,13 @@ class Ray {
     var nextHorzTouchX = xintercept;
     var nextHorzTouchY = yintercept;
 
-    if (this.isFacingUp)
-      nextHorzTouchY--;
+    //FIX: ajustado para fazer a verificacao dento do loop do hasWall
+    //sem realmente fazer o offset na hora de achar a coordenada do raio
+    // if (this.isFacingUp)
+    //   nextHorzTouchY--;
 
     while (nextHorzTouchX >= 0 && nextHorzTouchX <= WINDOW_WIDTH && nextHorzTouchY >= 0 && nextHorzTouchY <= WINDOW_HEIGHT) {
-      if (grid.hasWall(nextHorzTouchX, nextHorzTouchY)) {
+      if (grid.hasWall(nextHorzTouchX, nextHorzTouchY - (this.isFacingUp ? 1 : 0))) {
         foundHorzWallHit = true;
         horzWallHitX = nextHorzTouchX;
         horzWallHitY = nextHorzTouchY;
@@ -185,11 +193,13 @@ class Ray {
     var nextVertTouchX = xintercept;
     var nextVertTouchY = yintercept;
 
-    if (this.isFacingLeft)
-      nextVertTouchX--;
+    //FIX: ajustado para fazer a verificacao dento do loop do hasWall
+    //sem realmente fazer o offset na hora de achar a coordenada do raio
+    // if (this.isFacingLeft)
+    //   nextVertTouchX--;
 
     while (nextVertTouchX >= 0 && nextVertTouchX <= WINDOW_WIDTH && nextVertTouchY >= 0 && nextVertTouchY <= WINDOW_HEIGHT) {
-      if (grid.hasWall(nextVertTouchX, nextVertTouchY)) {
+      if (grid.hasWall(nextVertTouchX - (this.isFacingLeft ? 1 : 0), nextVertTouchY)) {
         foundVertWallHit = true;
         vertWallHitX = nextVertTouchX;
         vertWallHitY = nextVertTouchY;
@@ -200,10 +210,10 @@ class Ray {
       }
     }
 
-    //NOTE: achar a hipotenuza, assim pegar a menor distancia
+    //INFO: achar a hipotenuza, assim pegar a menor distancia
     var horzHitDist = (foundHorzWallHit)
       ? distanceBetweenPoints(player.x, player.y, horzWallHitX, horzWallHitY)
-      : Number.MAX_VALUE; //HACK: refator em c para size_t - 1, para ficar com o maior valor possivel
+      : Number.MAX_VALUE; //REFACTOR: refatorar em c para size_t - 1, para ficar com o maior valor possivel
     var vertHitDist = (foundVertWallHit)
       ? distanceBetweenPoints(player.x, player.y, vertWallHitX, vertWallHitY)
       : Number.MAX_VALUE;
@@ -222,7 +232,10 @@ var player = new Player();
 var rays = [];
 
 function distanceBetweenPoints(x1, y1, x2, y2) {
-  return Math.sqrt((x2 - x1) * (x2 - x1), (y2 - y1) * (y2 - y1));
+  var dx, dy;
+  dx = x2 - x1;
+  dy = y2 - y1;
+  return Math.sqrt((dx*dx) + (dy*dy));
 }
 
 function keyPressed() {
@@ -290,3 +303,14 @@ function update() {
   player.update();
 }
 
+//TODO:
+//FIX:
+//WARNING:
+//PERF:
+//TEST:
+//HACK:
+//INFO:
+//NOTE:
+//NOTE:
+//INFO:
+//REFACTOR:
