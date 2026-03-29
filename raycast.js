@@ -297,6 +297,15 @@ function castAllRays() {
   }
 }
 
+function render3DProjectedWalls () {
+  for (var i = 0; i < NUM_RAYS; i++) {
+    var ray = rays[i];
+    var playerDistanceFromPlane;
+    var wallStripHeight = (TILE_SIZE / ray.distance)
+
+  }
+
+}
 //roda primeiro
 function setup() {
   //inicilizar os objetos
@@ -306,6 +315,8 @@ function setup() {
 //roda segundo
 function draw() {
   update();
+
+  render3DProjectedWalls();
   grid.render();
   for (x of rays)
     x.render();
@@ -317,15 +328,3 @@ function update() {
   castAllRays();
   player.update();
 }
-
-//TODO:
-//FIX:
-//WARNING:
-//PERF:
-//TEST:
-//HACK:
-//INFO:
-//NOTE:
-//NOTE:
-//INFO:
-//REFACTOR:
