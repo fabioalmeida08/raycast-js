@@ -137,6 +137,7 @@ class Ray {
     //////////////////////////////////////////
     var foundHorzWallHit = false;
     var horzWallHitX = 0;
+
     var horzWallHitY = 0;
 
     // achar a coordenada y do primeiro cruzamento horizontal (linha de tile) HORIZONTAL
@@ -301,11 +302,11 @@ function render3DProjectedWalls () {
   for (var i = 0; i < NUM_RAYS; i++) {
     var ray = rays[i];
 
-    var rayDistance = ray.distance;
+    var correctWallDistance = ray.distance * Math.cos(ray.rayAngle - player.rotationAngle)
 
     var playerDistanceFromPlane = (WINDOW_WIDTH / 2) / Math.tan(FOV_ANGLE / 2);
     // var wallStripHeight = (TILE_SIZE / ray.distance) * playerDistanceFromPlane;
-    var wallStripHeight = (TILE_SIZE  * playerDistanceFromPlane) / rayDistance;
+    var wallStripHeight = (TILE_SIZE  * playerDistanceFromPlane) / correctWallDistance;
     fill("rgba(255,255,255,1.0)")
     noStroke()
     rect(
@@ -326,6 +327,7 @@ function setup() {
 //roda segundo
 function draw() {
   clear();
+  //drawskyfloor();
   update();
 
   render3DProjectedWalls();
@@ -341,3 +343,4 @@ function update() {
   castAllRays();
   player.update();
 }
+
